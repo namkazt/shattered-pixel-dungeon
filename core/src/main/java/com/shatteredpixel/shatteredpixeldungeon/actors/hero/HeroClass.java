@@ -51,6 +51,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.CloakOfShadows;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.VelvetPouch;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.Food;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfIntelligent;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfInvisibility;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLiquidFlame;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfMindVision;
@@ -162,6 +163,10 @@ public enum HeroClass {
 		stones.quantity(3).collect();
 		Dungeon.quickslot.setSlot(0, stones);
 
+		// warrior default properties
+		hero.INT = 6;
+		hero.STR = 12;
+
 		if (hero.belongings.armor != null){
 			hero.belongings.armor.affixSeal(new BrokenSeal());
 		}
@@ -180,6 +185,14 @@ public enum HeroClass {
 
 		Dungeon.quickslot.setSlot(0, staff);
 
+		// mage default properties
+		hero.INT = 12;
+		hero.STR = 6;
+
+		// TODO: test only
+		PotionOfIntelligent poi = new PotionOfIntelligent();
+		poi.quantity(18).collect();
+
 		new ScrollOfUpgrade().identify();
 		new PotionOfLiquidFlame().identify();
 	}
@@ -197,6 +210,10 @@ public enum HeroClass {
 		Dungeon.quickslot.setSlot(0, cloak);
 		Dungeon.quickslot.setSlot(1, knives);
 
+		// rouge default properties
+		hero.INT = 9;
+		hero.STR = 9;
+
 		new ScrollOfMagicMapping().identify();
 		new PotionOfInvisibility().identify();
 	}
@@ -208,6 +225,10 @@ public enum HeroClass {
 		bow.identify().collect();
 
 		Dungeon.quickslot.setSlot(0, bow);
+
+		// huntress default properties
+		hero.INT = 10;
+		hero.STR = 8;
 
 		new PotionOfMindVision().identify();
 		new ScrollOfLullaby().identify();
@@ -223,6 +244,10 @@ public enum HeroClass {
 
 		Dungeon.quickslot.setSlot(0, hero.belongings.weapon);
 		Dungeon.quickslot.setSlot(1, spikes);
+
+		// duelist default properties
+		hero.INT = 8;
+		hero.STR = 10;
 
 		new PotionOfStrength().identify();
 		new ScrollOfMirrorImage().identify();

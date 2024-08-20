@@ -102,6 +102,7 @@ public class Dungeon {
 	public static enum LimitedDrops {
 		//limited world drops
 		STRENGTH_POTIONS,
+		INTELLIGENT_POTIONS,
 		UPGRADE_SCROLLS,
 		ARCANE_STYLI,
 		ENCH_STONE,
@@ -535,6 +536,22 @@ public class Dungeon {
 		if (floorThisSet % 2 == 1 && Random.Int(2) == 0) targetPOSLeft --;
 
 		if (targetPOSLeft < posLeftThisSet) return true;
+		else return false;
+
+	}
+
+	public static boolean poiNeeded() {
+		//2 POI each floor set
+		int poiLeftThisSet = 2 - (LimitedDrops.INTELLIGENT_POTIONS.count - (depth / 5) * 2);
+		if (poiLeftThisSet <= 0) return false;
+
+		int floorThisSet = (depth % 5);
+
+		//poi drops every two floors, (numbers 1-2, and 3-4) with a 50% chance for the earlier one each time.
+		int targetPOILeft = 2 - floorThisSet/2;
+		if (floorThisSet % 2 == 1 && Random.Int(2) == 0) targetPOILeft --;
+
+		if (targetPOILeft < poiLeftThisSet) return true;
 		else return false;
 
 	}

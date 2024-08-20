@@ -139,7 +139,9 @@ public class GamesInProgress {
 		
 		info.level = Dungeon.hero.lvl;
 		info.str = Dungeon.hero.STR;
+		info.intel = Dungeon.hero.INT;
 		info.strBonus = Dungeon.hero.STR() - Dungeon.hero.STR;
+		info.intBonus = Dungeon.hero.INT() - Dungeon.hero.INT;
 		info.exp = Dungeon.hero.exp;
 		info.hp = Dungeon.hero.HP;
 		info.ht = Dungeon.hero.HT;
@@ -176,7 +178,9 @@ public class GamesInProgress {
 
 		public int level;
 		public int str;
+		public int intel;
 		public int strBonus;
+		public int intBonus;
 		public int exp;
 		public int hp;
 		public int ht;

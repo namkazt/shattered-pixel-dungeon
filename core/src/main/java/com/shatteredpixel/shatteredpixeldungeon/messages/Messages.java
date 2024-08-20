@@ -26,7 +26,6 @@ import com.badlogic.gdx.utils.I18NBundle;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
-
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -37,178 +36,172 @@ import java.util.IllegalFormatException;
 import java.util.Locale;
 
 /*
-	Simple wrapper class for libGDX I18NBundles.
+        Simple wrapper class for libGDX I18NBundles.
 
-	The core idea here is that each string resource's key is a combination of the class definition and a local value.
-	An object or static method would usually call this with an object/class reference (usually its own) and a local key.
-	This means that an object can just ask for "name" rather than, say, "items.weapon.enchantments.death.name"
+        The core idea here is that each string resource's key is a combination
+   of the class definition and a local value. An object or static method would
+   usually call this with an object/class reference (usually its own) and a
+   local key. This means that an object can just ask for "name" rather than,
+   say, "items.weapon.enchantments.death.name"
  */
 public class Messages {
 
-	private static ArrayList<I18NBundle> bundles;
-	private static Languages lang;
-	private static Locale locale;
+  private static ArrayList<I18NBundle> bundles;
+  private static Languages lang;
+  private static Locale locale;
 
-	public static final String NO_TEXT_FOUND = "!!!NO TEXT FOUND!!!";
+  public static final String NO_TEXT_FOUND = "!!!NO TEXT FOUND!!!";
 
-	public static Languages lang(){
-		return lang;
-	}
+  public static Languages lang() { return lang; }
 
-	public static Locale locale(){
-		return locale;
-	}
+  public static Locale locale() { return locale; }
 
-	/**
-	 * Setup Methods
-	 */
+  /**
+   * Setup Methods
+   */
 
-	private static String[] prop_files = new String[]{
-			Assets.Messages.ACTORS,
-			Assets.Messages.ITEMS,
-			Assets.Messages.JOURNAL,
-			Assets.Messages.LEVELS,
-			Assets.Messages.MISC,
-			Assets.Messages.PLANTS,
-			Assets.Messages.SCENES,
-			Assets.Messages.UI,
-			Assets.Messages.WINDOWS
-	};
+  private static String[] prop_files = new String[] {
+      Assets.Messages.ACTORS, Assets.Messages.ITEMS, Assets.Messages.JOURNAL,
+      Assets.Messages.LEVELS, Assets.Messages.MISC,  Assets.Messages.PLANTS,
+      Assets.Messages.SCENES, Assets.Messages.UI,    Assets.Messages.WINDOWS};
 
-	static{
-		setup(SPDSettings.language());
-	}
+  static { setup(SPDSettings.language()); }
 
-	public static void setup( Languages lang ){
-		//seeing as missing keys are part of our process, this is faster than throwing an exception
-		I18NBundle.setExceptionOnMissingKey(false);
+  public static void setup(Languages lang) {
+    // seeing as missing keys are part of our process, this is faster than
+    // throwing an exception
+    I18NBundle.setExceptionOnMissingKey(false);
 
-		//store language and locale info for various string logic
-		Messages.lang = lang;
-		if (lang == Languages.ENGLISH){
-			locale = Locale.ENGLISH;
-		} else {
-			locale = new Locale(lang.code());
-		}
+    // store language and locale info for various string logic
+    Messages.lang = lang;
+    if (lang == Languages.ENGLISH) {
+      locale = Locale.ENGLISH;
+    } else {
+      locale = new Locale(lang.code());
+    }
 
-		//strictly match the language code when fetching bundles however
-		bundles = new ArrayList<>();
-		Locale bundleLocal = new Locale(lang.code());
-		for (String file : prop_files) {
-			bundles.add(I18NBundle.createBundle(Gdx.files.internal(file), bundleLocal));
-		}
-	}
+    // strictly match the language code when fetching bundles however
+    bundles = new ArrayList<>();
+    Locale bundleLocal = new Locale(lang.code());
+    for (String file : prop_files) {
+      bundles.add(
+          I18NBundle.createBundle(Gdx.files.internal(file), bundleLocal));
+    }
+  }
 
+  /**
+   * Resource grabbing methods
+   */
 
+  public static String get(String key, Object... args) {
+    return get(null, key, args);
+  }
 
-	/**
-	 * Resource grabbing methods
-	 */
+  public static String get(Object o, String k, Object... args) {
+    return get(o.getClass(), k, args);
+  }
 
-	public static String get(String key, Object...args){
-		return get(null, key, args);
-	}
+  public static String get(Class c, String k, Object... args) {
+    String key;
+    if (c != null) {
+      key =
+          c.getName().replace("com.shatteredpixel.shatteredpixeldungeon.", "");
+      key += "." + k;
+    } else
+      key = k;
 
-	public static String get(Object o, String k, Object...args){
-		return get(o.getClass(), k, args);
-	}
+    String value = getFromBundle(key.toLowerCase(Locale.ENGLISH));
+    if (value != null) {
+      if (args.length > 0)
+        return format(value, args);
+      else
+        return value;
+    } else {
+      // this is so child classes can inherit properties from their parents.
+      // in cases where text is commonly grabbed as a utility from classes that
+      // aren't mean to be instantiated (e.g. flavourbuff.dispTurns()) using
+      //.class directly is probably smarter to prevent unnecessary recursive
+      //calls.
+      if (c != null && c.getSuperclass() != null) {
+        return get(c.getSuperclass(), k, args);
+      } else {
+        return "!! " + k + " !!";
+      }
+    }
+  }
 
-	public static String get(Class c, String k, Object...args){
-		String key;
-		if (c != null){
-			key = c.getName().replace("com.shatteredpixel.shatteredpixeldungeon.", "");
-			key += "." + k;
-		} else
-			key = k;
+  private static String getFromBundle(String key) {
+    String result;
+    for (I18NBundle b : bundles) {
+      result = b.get(key);
+      // if it isn't the return string for no key found, return it
+      if (result.length() != key.length() + 6 || !result.contains(key)) {
+        return result;
+      }
+    }
+    return null;
+  }
 
-		String value = getFromBundle(key.toLowerCase(Locale.ENGLISH));
-		if (value != null){
-			if (args.length > 0) return format(value, args);
-			else return value;
-		} else {
-			//this is so child classes can inherit properties from their parents.
-			//in cases where text is commonly grabbed as a utility from classes that aren't mean to be instantiated
-			//(e.g. flavourbuff.dispTurns()) using .class directly is probably smarter to prevent unnecessary recursive calls.
-			if (c != null && c.getSuperclass() != null){
-				return get(c.getSuperclass(), k, args);
-			} else {
-				return NO_TEXT_FOUND;
-			}
-		}
-	}
+  /**
+   * String Utility Methods
+   */
 
-	private static String getFromBundle(String key){
-		String result;
-		for (I18NBundle b : bundles){
-			result = b.get(key);
-			//if it isn't the return string for no key found, return it
-			if (result.length() != key.length()+6 || !result.contains(key)){
-				return result;
-			}
-		}
-		return null;
-	}
+  public static String format(String format, Object... args) {
+    try {
+      return String.format(Locale.ENGLISH, format, args);
+    } catch (IllegalFormatException e) {
+      ShatteredPixelDungeon.reportException(
+          new Exception("formatting error for the string: " + format, e));
+      return format;
+    }
+  }
 
+  private static HashMap<String, DecimalFormat> formatters = new HashMap<>();
 
+  public static String decimalFormat(String format, double number) {
+    if (!formatters.containsKey(format)) {
+      formatters.put(format,
+                     new DecimalFormat(format, DecimalFormatSymbols.getInstance(
+                                                   Locale.ENGLISH)));
+    }
+    return formatters.get(format).format(number);
+  }
 
-	/**
-	 * String Utility Methods
-	 */
+  public static String capitalize(String str) {
+    if (str.length() == 0)
+      return str;
+    else
+      return str.substring(0, 1).toUpperCase(locale) + str.substring(1);
+  }
 
-	public static String format( String format, Object...args ) {
-		try {
-			return String.format(Locale.ENGLISH, format, args);
-		} catch (IllegalFormatException e) {
-			ShatteredPixelDungeon.reportException( new Exception("formatting error for the string: " + format, e) );
-			return format;
-		}
-	}
+  // Words which should not be capitalized in title case, mostly prepositions
+  // which appear ingame This list is not comprehensive!
+  private static final HashSet<String> noCaps = new HashSet<>(
+      Arrays.asList("a", "an", "and", "of", "by", "to", "the", "x", "for"));
 
-	private static HashMap<String, DecimalFormat> formatters = new HashMap<>();
+  public static String titleCase(String str) {
+    // English capitalizes every word except for a few exceptions
+    if (lang == Languages.ENGLISH) {
+      String result = "";
+      // split by any unicode space character
+      for (String word : str.split("(?<=\\p{Zs})")) {
+        if (noCaps.contains(word.trim()
+                                .toLowerCase(Locale.ENGLISH)
+                                .replaceAll(":|[0-9]", ""))) {
+          result += word;
+        } else {
+          result += capitalize(word);
+        }
+      }
+      // first character is always capitalized.
+      return capitalize(result);
+    }
 
-	public static String decimalFormat( String format, double number ){
-		if (!formatters.containsKey(format)){
-			formatters.put(format, new DecimalFormat(format, DecimalFormatSymbols.getInstance(Locale.ENGLISH)));
-		}
-		return formatters.get(format).format(number);
-	}
+    // Otherwise, use sentence case
+    return capitalize(str);
+  }
 
-	public static String capitalize( String str ){
-		if (str.length() == 0)  return str;
-		else                    return str.substring( 0, 1 ).toUpperCase(locale) + str.substring( 1 );
-	}
+  public static String upperCase(String str) { return str.toUpperCase(locale); }
 
-	//Words which should not be capitalized in title case, mostly prepositions which appear ingame
-	//This list is not comprehensive!
-	private static final HashSet<String> noCaps = new HashSet<>(
-			Arrays.asList("a", "an", "and", "of", "by", "to", "the", "x", "for")
-	);
-
-	public static String titleCase( String str ){
-		//English capitalizes every word except for a few exceptions
-		if (lang == Languages.ENGLISH){
-			String result = "";
-			//split by any unicode space character
-			for (String word : str.split("(?<=\\p{Zs})")){
-				if (noCaps.contains(word.trim().toLowerCase(Locale.ENGLISH).replaceAll(":|[0-9]", ""))){
-					result += word;
-				} else {
-					result += capitalize(word);
-				}
-			}
-			//first character is always capitalized.
-			return capitalize(result);
-		}
-
-		//Otherwise, use sentence case
-		return capitalize(str);
-	}
-
-	public static String upperCase( String str ){
-		return str.toUpperCase(locale);
-	}
-
-	public static String lowerCase( String str ){
-		return str.toLowerCase(locale);
-	}
+  public static String lowerCase(String str) { return str.toLowerCase(locale); }
 }

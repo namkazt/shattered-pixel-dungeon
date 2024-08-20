@@ -49,7 +49,7 @@ public abstract class DamageWand extends Wand{
 	}
 
 	public int damageRoll(int lvl){
-		int dmg = Char.combatRoll(min(lvl), max(lvl));
+		int dmg = Math.round(Char.combatRoll(min(lvl), max(lvl)) + curUser.getModifierIntelligent());
 		WandEmpower emp = Dungeon.hero.buff(WandEmpower.class);
 		if (emp != null){
 			dmg += emp.dmgBoost;
@@ -64,9 +64,10 @@ public abstract class DamageWand extends Wand{
 
 	@Override
 	public String statsDesc() {
+		int modifier = Math.round(Dungeon.hero.getModifierIntelligent());
 		if (levelKnown)
-			return Messages.get(this, "stats_desc", min(), max());
+			return Messages.get(this, "stats_desc", min() + modifier, max() + modifier);
 		else
-			return Messages.get(this, "stats_desc", min(0), max(0));
+			return Messages.get(this, "stats_desc", min(0) + modifier, max(0) + modifier);
 	}
 }

@@ -181,6 +181,7 @@ public class Hero extends Char {
 	public static final int MAX_LEVEL = 30;
 
 	public static final int STARTING_STR = 10;
+	public static final int STARTING_INT = 10;
 	
 	private static final float TIME_TO_REST		    = 1f;
 	private static final float TIME_TO_SEARCH	    = 2f;
@@ -207,6 +208,7 @@ public class Hero extends Char {
 	public Belongings belongings;
 	
 	public int STR;
+	public int INT;
 	
 	public float awareness;
 	
@@ -226,6 +228,7 @@ public class Hero extends Char {
 
 		HP = HT = 20;
 		STR = STARTING_STR;
+		INT = STARTING_INT;
 		
 		belongings = new Belongings( this );
 		
@@ -266,6 +269,14 @@ public class Hero extends Char {
 		return STR + strBonus;
 	}
 
+	public int INT() {
+		int intBonus = 0;
+
+		// TODO: add bonus logic for INT here
+
+		return INT + intBonus;
+	}
+
 	private static final String CLASS       = "class";
 	private static final String SUBCLASS    = "subClass";
 	private static final String ABILITY     = "armorAbility";
@@ -273,6 +284,7 @@ public class Hero extends Char {
 	private static final String ATTACK		= "attackSkill";
 	private static final String DEFENSE		= "defenseSkill";
 	private static final String STRENGTH	= "STR";
+	private static final String INTELLIGENT	= "INT";
 	private static final String LEVEL		= "lvl";
 	private static final String EXPERIENCE	= "exp";
 	private static final String HTBOOST     = "htboost";
@@ -291,6 +303,7 @@ public class Hero extends Char {
 		bundle.put( DEFENSE, defenseSkill );
 		
 		bundle.put( STRENGTH, STR );
+		bundle.put( INTELLIGENT, INT );
 		
 		bundle.put( LEVEL, lvl );
 		bundle.put( EXPERIENCE, exp );
@@ -319,6 +332,7 @@ public class Hero extends Char {
 		defenseSkill = bundle.getInt( DEFENSE );
 		
 		STR = bundle.getInt( STRENGTH );
+		INT = bundle.getInt( INTELLIGENT );
 
 		belongings.restoreFromBundle( bundle );
 	}
@@ -326,6 +340,7 @@ public class Hero extends Char {
 	public static void preview( GamesInProgress.Info info, Bundle bundle ) {
 		info.level = bundle.getInt( LEVEL );
 		info.str = bundle.getInt( STRENGTH );
+		info.intel = bundle.getInt( INTELLIGENT );
 		info.exp = bundle.getInt( EXPERIENCE );
 		info.hp = bundle.getInt( Char.TAG_HP );
 		info.ht = bundle.getInt( Char.TAG_HT );
@@ -389,7 +404,28 @@ public class Hero extends Char {
 			return 0;
 		}
 	}
-	
+
+	// return intelligent modifier, default will be 10.0f then increment by level
+	public float getModifierIntelligent() {
+		// 9f is default INT
+		// 16f is the rest of INT until max INT = 25f
+		// there 26 floor with maximum 13 poi -> mean max reached able int will be 12 + 13 = 25
+		int intelligent = Math.min(25, this.INT);
+		return easeInSine((intelligent - 9f) / 16f) * 32f;
+	}
+
+	private float easeInSine(float t) {
+		return -1 * (float)Math.cos(t * (Math.PI / 2f)) + 1f;
+	}
+
+	private float easeInQuad(float t) {
+		return t * t;
+	}
+	private float easeInCubic(float t) {
+		return t * t * t;
+	}
+
+
 	public String className() {
 		return subClass == null || subClass == HeroSubClass.NONE ? heroClass.title() : subClass.title();
 	}
